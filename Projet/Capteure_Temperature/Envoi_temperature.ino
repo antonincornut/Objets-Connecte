@@ -47,21 +47,41 @@ boolean getTemperature(float *temp){
   return true;
 }
  
-// setup()
 void setup() {
   Serial.begin(9600); // Initialisation du port série
   vw_setup(2000);
 }
  
-// loop()
 void loop() {
   float temp;
    
-  // Lit la température ambiante à ~1Hz
   if(getTemperature(&temp)) {
     
-    Serial.print("Temperature : "); // On signale le début de l'envoi
-    Serial.print(temp); // Temperature
- 
+    Serial.println("Envoi"); 
+    
+    Serial.println(temp); 
+    char bufFloat[sizeof(float)];
+    memcpy(bufFloat, &temp, sizeof(float));
+    
+    char id = 'T';
+    char dir = 'R';  
+    char bufTemp[sizeof(float)+2];
+
+    bufTemp[0] = dir;
+    bufTemp[1] = id;
+    for (int i = 2; i < 6; i++){
+      bufTemp[i] = bufFloat[i-2];
+    }
+    
+    for (int i = 0; i < 6; i++){
+      Serial.print((char)bufTemp[i]);
+    }
+    Serial.println("Envoie...");
+
+    vw_send((uint8_t *)bufTemp, sizeof(bufTemp));
+    vw_wait_tx();
+    Serial.println("Done !"); 
+    delay(1000); 
+    
   }
 }
